@@ -1,0 +1,52 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+
+  tasks     Task[]
+  sessions  PomodoroSession[]
+}
+
+model Task {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  isCompleted Boolean  @default(false)
+  priority    String   @default("medium") // high, medium, low
+  category    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  
+  sessions    PomodoroSession[]
+}
+
+model PomodoroSession {
+  id         Int      @id @default(autoincrement())
+  durationMs Int
+  startTime  DateTime @default(now())
+  endTime    DateTime
+  
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  
+  status     String   @default("completed") // "completed" or "failed"
+  
+  
+  // Optional link to a task
+  taskId     Int?
+  task       Task?    @relation(fields: [taskId], references: [id])
+}
